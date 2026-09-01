@@ -1,0 +1,882 @@
+/* ==========================================================================
+   wolfie_lists.css
+
+   The entire look of Wolfie Lists, in one external stylesheet.
+
+   TWO CONVENTIONS ARE FOLLOWED THROUGHOUT
+
+   1. Every size is in rem, never in px. One rem is one times the browser's own
+      base font size, so a user who has turned their font size up because they
+      cannot read 16px text gets a whole interface that grows with it, not just
+      the words. Borders and hairlines are in rem too, i.e. 0.0625rem is one
+      pixel at the default setting.
+
+   2. Every color comes from a custom property defined once in :root. The palette
+      is Stony Brook University's: red #990000 with black, white and warm greys.
+      Nothing anywhere else in this file writes a color literal.
+
+   A RULE WITH AN EMPTY BODY IS NOT A MISTAKE. It marks styling that belongs to
+   a part of the application you have not built yet: the target date, the
+   completed tick, and the modal controls that go with them. The selectors are
+   the ones the rest of the code and the tests expect. Filling them in is part of
+   the work.
+
+   THE PRIORITY IS NOT MARKED OUT AT ALL. There is no rule, no selector and no
+   color for it anywhere in this file, and that is deliberate. How a priority
+   looks on a card, and every color it is drawn in, is yours to work out from the
+   screenshots in the assignment write up.
+   ========================================================================== */
+
+:root {
+    /* ----- Stony Brook University ----- */
+    --sbu-red: #990000;
+    --sbu-red-dark: #6f0000;
+    --sbu-red-light: #b32626;
+    --sbu-black: #000000;
+    --sbu-white: #ffffff;
+
+    /* ----- warm greys, which sit better beside the red than neutral ones ----- */
+    --grey-050: #faf9f8;
+    --grey-100: #f2f0ee;
+    --grey-200: #e4e1dd;
+    --grey-300: #cbc6c0;
+    --grey-500: #8a837c;
+    --grey-700: #55504b;
+    --grey-900: #221f1d;
+
+    /* ----- the tick in the completed column ----- */
+    --completed-mark: #3c6b34;
+
+    /* ----- shape and depth ----- */
+    --radius-card: 0.75rem;
+    --radius-control: 0.5rem;
+    --radius-modal: 1rem;
+    --hairline: 0.0625rem;
+
+    --shadow-card: 0 0.0625rem 0.1875rem rgba(34, 31, 29, 0.16);
+    --shadow-card-hover: 0 0.25rem 0.75rem rgba(34, 31, 29, 0.22);
+    --shadow-bar: 0 0.125rem 0.5rem rgba(34, 31, 29, 0.28);
+    --shadow-modal: 0 1.25rem 3.5rem rgba(34, 31, 29, 0.45);
+
+    /* ----- typography ----- */
+    --font-body: "Segoe UI", Tahoma, Geneva, Verdana, system-ui, sans-serif;
+    --font-script: "Segoe Script", "Brush Script MT", "Lucida Handwriting",
+        "Apple Chancery", cursive;
+
+    /* ----- the one grid that both an item card and the column headers use ----- */
+    --item-grid-columns: 1.75rem minmax(8rem, 1fr) 7rem 4.75rem;
+    --item-grid-areas: "handle description entered actions";
+    --card-inline-padding: 0.875rem;
+    --card-accent-width: 0.3125rem;
+}
+
+/* ==========================================================================
+   reset and page frame
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    /* left at the browser's own base size on purpose, see note 1 at the top */
+    font-size: 100%;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--grey-900);
+    background-color: var(--grey-100);
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* the single most used class in the application: it is how a Single Page
+   Application changes screens, and how every modal comes and goes */
+.hidden {
+    display: none !important;
+}
+
+.noscript-warning {
+    margin: 2rem;
+    padding: 1rem;
+    border-left: 0.25rem solid var(--sbu-red);
+    background-color: var(--sbu-white);
+}
+
+/* a screen. only ever one of them is not hidden */
+.view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* without this a flex child refuses to shrink below its content, and the
+       scrollable container inside would push the page instead of scrolling */
+    min-height: 0;
+}
+
+/* the area beneath a header or a toolbar. it is the positioning context for the
+   floating + button */
+.view-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    padding: 1.25rem 1.5rem 0;
+}
+
+/* ==========================================================================
+   the home screen header
+   ========================================================================== */
+
+/* The logo and the title sit side by side as one centered group. Laying the
+   header out with flex rather than text-align is what lets the two be centered
+   together while staying vertically aligned with each other. */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    color: var(--sbu-white);
+    background-color: var(--sbu-red);
+    box-shadow: var(--shadow-bar);
+}
+
+/* The source image is a white Wolfie with an outline on a transparent
+   background, so it needs no treatment at all against the red header. The
+   drop-shadow is the same offset and blur as the title's text-shadow, which is
+   what makes the two read as one piece of artwork rather than as an image that
+   happens to be next to some words. */
+.app-logo {
+    height: 4rem;
+    width: auto;
+    filter: drop-shadow(0 0.125rem 0.25rem rgba(0, 0, 0, 0.35));
+}
+
+.app-title {
+    margin: 0;
+    font-family: var(--font-script);
+    font-size: 3.5rem;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: 0.03em;
+    text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.35);
+}
+
+/* ==========================================================================
+   the list screen toolbar
+   ========================================================================== */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    color: var(--sbu-white);
+    background-color: var(--sbu-red);
+    box-shadow: var(--shadow-bar);
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 0.375rem;
+}
+
+.toolbar-group-right {
+    margin-left: auto;
+}
+
+.toolbar-title {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+}
+
+.toolbar-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.375rem;
+    line-height: 1;
+    color: var(--sbu-white);
+    background-color: transparent;
+    border: none;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+/* The home button is an ordinary toolbar button whose face happens to be a
+   picture rather than a glyph. A button will not centre its contents on its own,
+   hence the flex, and its default padding has to come off or the logo would be
+   squeezed. The image is sized by height so that it matches the optical weight
+   of the arrows beside it; because the logo is wider than it is tall, that
+   height is what keeps it inside the 2.5rem square. */
+.toolbar-button-home {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.toolbar-logo {
+    height: 1.5rem;
+    width: auto;
+    filter: drop-shadow(0 0.0625rem 0.125rem rgba(0, 0, 0, 0.35));
+}
+
+.toolbar-button:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+.toolbar-button:active:not(:disabled) {
+    background-color: rgba(0, 0, 0, 0.18);
+}
+
+.toolbar-button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* the list's name, editable in place. it looks like a heading until you put the
+   caret in it, at which point it looks like the text field it always was */
+.list-name-input {
+    width: 100%;
+    max-width: 32rem;
+    padding: 0.375rem 0.75rem;
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--sbu-white);
+    background-color: transparent;
+    border: var(--hairline) solid transparent;
+    border-radius: var(--radius-control);
+    text-overflow: ellipsis;
+}
+
+.list-name-input:hover {
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+.list-name-input:focus {
+    color: var(--grey-900);
+    background-color: var(--sbu-white);
+    border-color: var(--sbu-white);
+    outline: none;
+}
+
+/* ==========================================================================
+   scrollable card containers
+   ========================================================================== */
+
+.card-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 0;
+    /* the bottom padding is what keeps the last card clear of the + button */
+    padding: 0.125rem 0.5rem 5.5rem 0.125rem;
+    list-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--grey-300) transparent;
+}
+
+.card-container::-webkit-scrollbar {
+    width: 0.625rem;
+}
+
+.card-container::-webkit-scrollbar-thumb {
+    background-color: var(--grey-300);
+    border-radius: 0.3125rem;
+}
+
+.empty-message {
+    margin: auto;
+    padding-bottom: 4rem;
+    font-size: 1.0625rem;
+    text-align: center;
+    color: var(--grey-500);
+}
+
+/* ==========================================================================
+   cards, shared by both screens
+   ========================================================================== */
+
+.card {
+    background-color: var(--sbu-white);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card + .card {
+    margin-top: 0.625rem;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-0.0625rem);
+}
+
+.card:focus-visible {
+    outline: 0.1875rem solid var(--sbu-red);
+    outline-offset: 0.125rem;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.icon-button {
+    width: 2.25rem;
+    height: 2.25rem;
+    /* the duplicate and trash can glyphs live in the symbol font. Naming it here,
+       together with the U+FE0E after each glyph in the markup, is what stops the
+       browser from reaching for the emoji font and painting them in its own
+       colors instead of ours */
+    font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", sans-serif;
+    font-size: 1.125rem;
+    line-height: 1;
+    color: var(--grey-700);
+    background-color: transparent;
+    border: none;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.icon-button:hover {
+    color: var(--sbu-black);
+    background-color: var(--grey-200);
+}
+
+.icon-button-danger:hover {
+    color: var(--sbu-white);
+    background-color: var(--sbu-red);
+}
+
+.icon-button:focus-visible {
+    outline: 0.1875rem solid var(--sbu-red);
+    outline-offset: 0.0625rem;
+}
+
+/* ==========================================================================
+   home screen cards, one per list
+   ========================================================================== */
+
+.list-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem var(--card-inline-padding);
+    border-left: var(--card-accent-width) solid var(--sbu-red);
+}
+
+.list-card-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.list-card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.list-card-subtitle {
+    font-size: 0.8125rem;
+    color: var(--grey-500);
+}
+
+/* ==========================================================================
+   list screen cards, one per item
+   ========================================================================== */
+
+.item-column-headers {
+    display: grid;
+    grid-template-columns: var(--item-grid-columns);
+    grid-template-areas: var(--item-grid-areas);
+    gap: 0.75rem;
+    /* Two things have to be matched for a header to land over its column. The
+       transparent border stands in for the accent stripe down a card's left
+       edge, and the extra padding stands in for the insets .card-container puts
+       around the cards it scrolls, i.e. 0.125rem on the left and the 0.5rem
+       scrollbar gutter on the right. Miss the second and every fixed width
+       column is drawn half a pace to the right of the values underneath it. */
+    padding:
+        0 calc(var(--card-inline-padding) + 0.5rem)
+        0.5rem calc(var(--card-inline-padding) + 0.125rem);
+    border-left: var(--card-accent-width) solid transparent;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--grey-500);
+}
+
+.item-card {
+    display: grid;
+    grid-template-columns: var(--item-grid-columns);
+    grid-template-areas: var(--item-grid-areas);
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem var(--card-inline-padding);
+    border-left: var(--card-accent-width) solid var(--grey-300);
+}
+
+.drag-handle {
+    grid-area: handle;
+    font-size: 1.125rem;
+    line-height: 1;
+    text-align: center;
+    color: var(--grey-300);
+    cursor: grab;
+}
+
+.item-description {
+    grid-area: description;
+    min-width: 0;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.item-date-entered {
+    grid-area: entered;
+}
+
+.item-target-date {
+}
+
+.item-completed-mark {
+}
+
+/* The dates are centered in their columns rather than pushed to one side, which
+   is what puts each header centered over the values beneath it. Nothing is
+   knocked out of line by this: the dates use tabular figures and are all the same
+   width, so the column still reads as one straight edge. Whatever you add in the
+   columns beside them wants to hold that line too. */
+.item-date-entered,
+.item-column-headers .column-centered {
+    text-align: center;
+}
+
+.item-card .card-actions {
+    grid-area: actions;
+    justify-content: flex-end;
+}
+
+.item-date {
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--grey-700);
+}
+
+/* a finished item is struck through and steps into the background */
+.item-card.item-completed {
+}
+
+.item-card.item-completed .item-description {
+}
+
+/* ----- drag and drop ----- */
+
+.item-card.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+}
+
+/* an inset shadow rather than a border, because a border would change the height
+   of the card and make everything below it jump while the user is dragging */
+.item-card.drop-before {
+    box-shadow: inset 0 0.1875rem 0 0 var(--sbu-red), var(--shadow-card);
+}
+
+.item-card.drop-after {
+    box-shadow: inset 0 -0.1875rem 0 0 var(--sbu-red), var(--shadow-card);
+}
+
+/* ==========================================================================
+   the floating + button
+   ========================================================================== */
+
+.fab {
+    position: absolute;
+    right: 2rem;
+    bottom: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    font-family: var(--font-body);
+    font-size: 2.25rem;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--sbu-white);
+    background-color: var(--sbu-red);
+    border: 0.1875rem solid var(--sbu-white);
+    border-radius: 50%;
+    box-shadow: var(--shadow-card-hover);
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.fab:hover {
+    background-color: var(--sbu-red-light);
+    transform: scale(1.06);
+}
+
+.fab:active {
+    background-color: var(--sbu-red-dark);
+    transform: scale(0.98);
+}
+
+.fab:focus-visible {
+    outline: 0.1875rem solid var(--sbu-black);
+    outline-offset: 0.125rem;
+}
+
+/* ==========================================================================
+   modals
+   ========================================================================== */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    background-color: rgba(34, 31, 29, 0.55);
+}
+
+/* belt and braces: while a modal is up, nothing behind it can be clicked even if
+   a stray element somehow ended up above the backdrop */
+body.modal-is-open #app {
+    pointer-events: none;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    background-color: var(--sbu-white);
+    border-radius: var(--radius-modal);
+    box-shadow: var(--shadow-modal);
+}
+
+.modal-small {
+    width: min(27rem, calc(100vw - 2rem));
+}
+
+.modal-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    font-size: 1.1875rem;
+    color: var(--sbu-white);
+    background-color: var(--sbu-red);
+    border-radius: var(--radius-modal) var(--radius-modal) 0 0;
+}
+
+.modal-heading-warning {
+    background-color: var(--sbu-black);
+}
+
+.modal-icon {
+    font-size: 1.375rem;
+    line-height: 1;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+}
+
+.modal-message {
+    margin: 0;
+    padding: 1.25rem;
+    color: var(--grey-700);
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    background-color: var(--grey-100);
+    border-top: var(--hairline) solid var(--grey-200);
+    border-radius: 0 0 var(--radius-modal) var(--radius-modal);
+}
+
+.modal-footer-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.modal-footer-group-right {
+    margin-left: auto;
+}
+
+/* the small nudge a modal gives when the backdrop is clicked, to say that it is
+   still waiting for an answer rather than simply vanishing */
+@keyframes modal-shake {
+    0%, 100% { transform: translate(-50%, -50%); }
+    20% { transform: translate(calc(-50% - 0.5rem), -50%); }
+    40% { transform: translate(calc(-50% + 0.5rem), -50%); }
+    60% { transform: translate(calc(-50% - 0.3125rem), -50%); }
+    80% { transform: translate(calc(-50% + 0.3125rem), -50%); }
+}
+
+.modal-shake {
+    animation: modal-shake 0.32s ease;
+}
+
+/* ==========================================================================
+   form controls inside modals
+   ========================================================================== */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3125rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.field-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--grey-700);
+}
+
+.field-row {
+}
+
+.field-row-tight {
+}
+
+.checkbox-field {
+}
+
+.checkbox-field input {
+}
+
+/* Everything below is scoped to .modal on purpose. The list name field up in the
+   toolbar is also an input[type="text"], and an unscoped rule here would come
+   later in the file than the .list-name-input rules, outrank them on specificity,
+   and quietly paint a white box in the middle of the red toolbar. */
+.modal input[type="text"],
+.modal input[type="date"],
+.modal select {
+    width: 100%;
+    padding: 0.5rem 0.625rem;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--grey-900);
+    background-color: var(--sbu-white);
+    border: var(--hairline) solid var(--grey-300);
+    border-radius: var(--radius-control);
+}
+
+.modal input[type="date"] {
+    /* a date input sizes itself to its own content unless told otherwise */
+    min-width: 9rem;
+}
+
+/* the target date keeps its own width rather than stretching, so that the
+   Completed checkbox lands right beside it rather than out at the far edge of
+   the modal. This rule has to come after the one above to outrank it. */
+.modal input.target-date-input {
+}
+
+.modal input:focus,
+.modal select:focus {
+    border-color: var(--sbu-red);
+    outline: 0.125rem solid var(--sbu-red);
+    outline-offset: 0.0625rem;
+}
+
+.modal input:disabled {
+    color: var(--grey-500);
+    background-color: var(--grey-100);
+    cursor: not-allowed;
+}
+
+.modal ::placeholder {
+    color: var(--grey-500);
+}
+
+/* ==========================================================================
+   buttons
+   ========================================================================== */
+
+.button {
+    padding: 0.5rem 1.125rem;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border: var(--hairline) solid transparent;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.button:focus-visible {
+    outline: 0.1875rem solid var(--sbu-black);
+    outline-offset: 0.125rem;
+}
+
+.button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.button-primary {
+    color: var(--sbu-white);
+    background-color: var(--sbu-red);
+}
+
+.button-primary:hover:not(:disabled) {
+    background-color: var(--sbu-red-dark);
+}
+
+.button-secondary {
+    color: var(--grey-900);
+    background-color: var(--sbu-white);
+    border-color: var(--grey-300);
+}
+
+.button-secondary:hover:not(:disabled) {
+    background-color: var(--grey-200);
+}
+
+.button-danger {
+    color: var(--sbu-white);
+    background-color: var(--sbu-red);
+}
+
+.button-danger:hover:not(:disabled) {
+    background-color: var(--sbu-red-dark);
+}
+
+.button-quiet {
+    color: var(--grey-700);
+    background-color: transparent;
+}
+
+.button-quiet:hover:not(:disabled) {
+    color: var(--sbu-black);
+    background-color: var(--grey-200);
+}
+
+/* ==========================================================================
+   narrower windows
+
+   The item cards give up their single row layout and stack instead, and the
+   column headers go away with them since there are no longer any columns to
+   label.
+   ========================================================================== */
+
+@media (max-width: 46rem) {
+    .app-title {
+        font-size: 2.5rem;
+    }
+
+    /* the logo shrinks with the title, so the two keep their proportions */
+    .app-logo {
+        height: 2.875rem;
+    }
+
+    .app-header {
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .view-body {
+        padding: 1rem 0.875rem 0;
+    }
+
+    .item-column-headers {
+        display: none;
+    }
+
+    .item-card {
+        grid-template-columns: 1.75rem 1fr 1fr auto;
+        grid-template-areas:
+            "handle description description actions"
+            "handle entered     entered     actions";
+        gap: 0.375rem 0.75rem;
+        align-items: center;
+    }
+
+    .item-description {
+        white-space: normal;
+    }
+
+    .item-date-entered::before {
+        content: "Entered ";
+        color: var(--grey-500);
+    }
+
+    .item-target-date::before {
+    }
+
+    /* stacked into rows there are no columns to center anything in, and a
+       centered value in a row of its own reads as a mistake */
+    .item-date-entered {
+        text-align: left;
+    }
+
+    .item-target-date,
+    .item-completed-mark {
+    }
+
+    /* nothing is drawn here at all unless the item is completed, so the label
+       and the tick appear together or not at all */
+    .item-card.item-completed .item-completed-mark::before {
+    }
+
+    .field-row {
+    }
+
+    .field-row-tight {
+    }
+}
+
+/* respect a user who has asked their system for less animation */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

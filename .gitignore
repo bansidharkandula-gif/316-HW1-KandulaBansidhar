@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# everything the test suite generates: the coverage report, the Playwright HTML
+# report, the traces and screenshots from failed runs, and the dependency graph.
+# All of it is rebuilt by running the tests again, so `rm -rf tests/output` is
+# always safe.
+#
+# It sits inside tests/ beside the two runner configs, so everything to do with
+# testing is in one place. This entry is what keeps it out of a commit: `git add
+# tests/` will not stage an ignored directory, so nobody picks up a megabyte of
+# HTML reports by accident.
+tests/output/
+
+# editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs
+npm-debug.log*
+*.log

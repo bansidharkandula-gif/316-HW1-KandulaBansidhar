@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wolfie Lists</title>
+    <meta name="description" content="Wolfie Lists, a to-do list manager built for CSE 316 at Stony Brook University." />
+
+    <!-- a tiny inline favicon so we do not have to ship an image file -->
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23990000'/%3E%3Ctext x='16' y='24' font-size='22' font-family='Georgia,serif' fill='white' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E" />
+
+    <link rel="stylesheet" href="css/wolfie_lists.css" />
+</head>
+
+<body>
+    <noscript>
+        <p class="noscript-warning">Wolfie Lists is a JavaScript application. Please enable JavaScript to use it.</p>
+    </noscript>
+
+    <!--
+        THE WHOLE APPLICATION LIVES IN THIS ONE PAGE
+
+        Both screens are here in the markup at all times, and switching screens
+        means nothing more than moving the hidden class from one to the other.
+        That is what makes this a Single Page Application, the browser never
+        navigates anywhere and the page never reloads.
+
+        Notice how little is written here. Every card on both screens is stamped
+        out at runtime by a card prototype, and every modal is filled in by its
+        own class. This file only lays out the furniture that never moves.
+    -->
+    <div id="app">
+
+        <!-- ================= HOME VIEW ================= -->
+        <section id="home-view" class="view" aria-label="Home">
+            <header class="app-header">
+                <!--
+                    alt is deliberately empty. The logo sits immediately beside
+                    the words "Wolfie Lists", so giving it alt text would make a
+                    screen reader announce the same thing twice. An empty alt is
+                    how you say "this image is decoration", which is different
+                    from omitting the attribute entirely.
+
+                    width and height carry the image's real pixel dimensions even
+                    though the stylesheet sizes it. The browser uses them to work
+                    out the aspect ratio and reserve the space before the file has
+                    loaded, so the title does not jump sideways on a slow
+                    connection.
+                -->
+                <img class="app-logo" src="images/wolfie-logo.png" alt=""
+                    width="1464" height="1054" />
+                <h1 class="app-title">Wolfie Lists</h1>
+            </header>
+
+            <div class="view-body">
+                <ul id="list-card-container" class="card-container" aria-label="Your lists"></ul>
+
+                <p id="home-empty-message" class="empty-message hidden">
+                    You do not have any lists yet.<br />
+                    Press the <strong>+</strong> button to make your first one.
+                </p>
+
+                <button id="add-list-button" type="button" class="fab" title="Create a new list"
+                    aria-label="Create a new list">+</button>
+            </div>
+        </section>
+
+        <!-- ================= LIST VIEW ================= -->
+        <section id="list-view" class="view hidden" aria-label="List editor">
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <!--
+                        The Wolfie in the corner does exactly what the close
+                        button on the far right does. Here the image is inside a
+                        real <button>, so unlike the decorative logo on the home
+                        screen it needs an accessible name; that name goes on the
+                        button, and the image keeps an empty alt so a screen
+                        reader announces the control once rather than twice.
+                    -->
+                    <button id="home-button" type="button" class="toolbar-button toolbar-button-home"
+                        title="Close this list and return to the home screen"
+                        aria-label="Close this list and return to the home screen">
+                        <img class="toolbar-logo" src="images/wolfie-logo.png" alt=""
+                            width="1464" height="1054" />
+                    </button>
+                    <button id="undo-button" type="button" class="toolbar-button" title="Undo (Ctrl+Z)"
+                        aria-label="Undo">&#x21B6;</button>
+                    <button id="redo-button" type="button" class="toolbar-button" title="Redo (Ctrl+Y)"
+                        aria-label="Redo">&#x21B7;</button>
+                </div>
+
+                <div class="toolbar-title">
+                    <input id="list-name-input" type="text" class="list-name-input" maxlength="60" spellcheck="false"
+                        autocomplete="off" aria-label="The name of this list" />
+                </div>
+
+                <div class="toolbar-group toolbar-group-right">
+                    <button id="close-button" type="button" class="toolbar-button" title="Close this list"
+                        aria-label="Close this list">&#x2715;</button>
+                </div>
+            </div>
+
+            <div class="view-body">
+                <!-- these headers use the very same grid as an item card, which is
+                     what keeps the columns lined up -->
+                <div class="item-column-headers" aria-hidden="true">
+                    <span></span>
+                    <span>Task</span>
+                    <span class="column-centered">Date Entered</span>
+                    <span></span>
+                </div>
+
+                <ol id="item-card-container" class="card-container" aria-label="The items in this list"></ol>
+
+                <p id="list-empty-message" class="empty-message hidden">
+                    This list is empty.<br />
+                    Press the <strong>+</strong> button to add an item.
+                </p>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= MODALS =================
+         All three modals share one backdrop. They sit outside of #app so that no
+         layout rule meant for a screen can accidentally reach them.
+    -->
+    <div id="modal-backdrop" class="modal-backdrop hidden"></div>
+
+    <!-- the item modal, for viewing and editing one item -->
+    <div id="item-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="item-modal-heading">
+        <h2 id="item-modal-heading" class="modal-heading">Edit Item</h2>
+
+        <form id="item-modal-form" class="modal-body" autocomplete="off">
+            <div class="field">
+                <label class="field-label" for="item-description-input">Description</label>
+                <input id="item-description-input" type="text" maxlength="200"
+                    placeholder="What needs to be done?" />
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="item-date-entered-input">Date Entered</label>
+                <input id="item-date-entered-input" type="date" />
+            </div>
+        </form>
+
+        <div class="modal-footer">
+            <div class="modal-footer-group">
+                <button id="item-next-button" type="button" class="button button-quiet"
+                    title="Save and move to the next item">Next&nbsp;&#x25B6;</button>
+            </div>
+            <div class="modal-footer-group modal-footer-group-right">
+                <button id="item-cancel-button" type="button" class="button button-secondary">Cancel</button>
+                <button id="item-ok-button" type="button" class="button button-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- the warning modal, shown before anything is destroyed -->
+    <div id="confirm-modal" class="modal modal-small hidden" role="alertdialog" aria-modal="true"
+        aria-labelledby="confirm-modal-heading" aria-describedby="confirm-modal-message">
+        <h2 id="confirm-modal-heading" class="modal-heading modal-heading-warning">
+            <span class="modal-icon" aria-hidden="true">&#x26A0;</span>
+            <span id="confirm-modal-title">Are you sure?</span>
+        </h2>
+        <p id="confirm-modal-message" class="modal-message"></p>
+        <div class="modal-footer">
+            <div class="modal-footer-group modal-footer-group-right">
+                <button id="confirm-decline-button" type="button" class="button button-secondary">Cancel</button>
+                <button id="confirm-accept-button" type="button" class="button button-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- the informative modal, for anything the user simply needs to be told -->
+    <div id="alert-modal" class="modal modal-small hidden" role="alertdialog" aria-modal="true"
+        aria-labelledby="alert-modal-heading" aria-describedby="alert-modal-message">
+        <h2 id="alert-modal-heading" class="modal-heading">
+            <span class="modal-icon" aria-hidden="true">&#x2139;</span>
+            <span id="alert-modal-title">Notice</span>
+        </h2>
+        <p id="alert-modal-message" class="modal-message"></p>
+        <div class="modal-footer">
+            <div class="modal-footer-group modal-footer-group-right">
+                <button id="alert-ok-button" type="button" class="button button-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TEMPLATES =================
+         THE PROTOTYPE DESIGN PATTERN, AND WHERE ITS PROTOTYPES LIVE
+
+         Everything below is a blank card: the shape of one, with none of the
+         data filled in. A <template> is the browser's own way of saying "this is
+         markup to be copied, not markup to be shown". Its contents are parsed
+         into a document fragment and then left completely inert — nothing inside
+         is rendered, no image inside it is fetched, and nothing inside it can be
+         reached by getElementById from the page. The only thing you can do with
+         a template is clone it, which is exactly what a prototype is for.
+
+         Every one of these is stamped out by a class in js/view/prototypes/.
+         That class finds the template by id, clones it once to keep as its
+         prototype, and thereafter copies that clone for every card it makes.
+
+         Why the markup lives here rather than in the JavaScript: this is an HTML
+         file, and HTML belongs in it. A card built out of a string inside a .js
+         file cannot be found by anyone searching this file for "list-card", is
+         not checked by an HTML validator, gets no syntax highlighting and no tag
+         matching, and will drift away from the stylesheet the moment somebody
+         edits one and not the other. Keeping it here means the shape of a card
+         is described exactly once, in the language meant for describing it.
+    -->
+
+    <!-- one card on the home screen, one per list the user owns -->
+    <template id="list-card-template">
+        <li class="card list-card" role="button" tabindex="0">
+            <div class="list-card-text">
+                <span class="list-card-title"></span>
+                <span class="list-card-subtitle"></span>
+            </div>
+            <div class="card-actions">
+                <button type="button" class="icon-button icon-button-danger" data-action="delete-list">&#x1F5D1;&#xFE0E;</button>
+            </div>
+        </li>
+    </template>
+
+    <!-- one card inside an open list, one per item -->
+    <template id="item-card-template">
+        <li class="card item-card" draggable="true" role="button" tabindex="0">
+            <span class="drag-handle" aria-hidden="true">&#x283F;</span>
+            <span class="item-description"></span>
+            <span class="item-date item-date-entered"></span>
+            <span class="card-actions">
+                <button type="button" class="icon-button" data-action="duplicate-item">&#x29C9;&#xFE0E;</button>
+            </span>
+        </li>
+    </template>
+
+    <!-- type="module" gives us import and export, and defers execution until the
+         document has been parsed, so no DOMContentLoaded dance is needed -->
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
