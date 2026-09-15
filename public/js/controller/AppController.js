@@ -14,14 +14,17 @@
  * that switch doubles as a table of contents for everything the application can
  * be asked to do.
  */
+import { ListItem } from '../model/ListItem.js';
 import { Observer } from '../common/Observer.js';
 import { EventTypes } from '../common/EventTypes.js';
 import { WolfieList } from '../model/WolfieList.js';
 import { Modal } from '../view/modals/Modal.js';
 import { ItemModal } from '../view/modals/ItemModal.js';
 
+import { DeleteItem_Transaction } from '../transactions/DeleteItem_Transaction.js';
 import { DuplicateItem_Transaction } from '../transactions/DuplicateItem_Transaction.js';
 import { EditItem_Transaction } from '../transactions/EditItem_Transaction.js';
+import { AddItem_Transaction } from '../transactions/AddItem_Transaction.js';
 import { MoveItem_Transaction } from '../transactions/MoveItem_Transaction.js';
 import { RenameList_Transaction } from '../transactions/RenameList_Transaction.js';
 
@@ -97,6 +100,9 @@ export class AppController extends Observer {
             case EventTypes.OPEN_LIST_REQUESTED:
                 this.#openList(event.get('listId'));
                 break;
+            case EventTypes.DUPLICATE_LIST_REQUESTED:
+                this.#model.duplicateList(event.get('listId'));
+                break;
             case EventTypes.DELETE_LIST_REQUESTED:
                 this.#confirmDeleteList(event.get('listId'), event.get('listName'));
                 break;
@@ -118,9 +124,15 @@ export class AppController extends Observer {
             case EventTypes.EDIT_ITEM_REQUESTED:
                 this.#itemModal.openForItem(this.#model.getCurrentList(), event.get('index'));
                 break;
+            case EventTypes.ADD_ITEM_REQUESTED:
+                this.#itemModal.openForNewItem();
+                break;
             case EventTypes.DUPLICATE_ITEM_REQUESTED:
                 this.#model.addTransaction(
                     new DuplicateItem_Transaction(this.#model, event.get('index')));
+                break;
+            case EventTypes.DELETE_ITEM_REQUESTED:
+                this.#confirmDeleteItem(event.get('index'), event.get('description'));
                 break;
             case EventTypes.MOVE_ITEM_REQUESTED:
                 this.#model.addTransaction(new MoveItem_Transaction(
@@ -229,12 +241,21 @@ export class AppController extends Observer {
      * @param {UIEvent} event an ITEM_MODAL_COMMIT
      */
     #handleItemCommit(event) {
+        const mode = event.get('mode');
         const index = event.get('index');
         const values = event.get('values');
         const then = event.get('then', 'close');
 
         const list = this.#model.getCurrentList();
         if (list === null) {
+            this.#itemModal.hide();
+            return;
+        }
+
+        if (mode === ItemModal.MODE_CREATE) {
+            const item = new ListItem(values);
+            const insertAt = list.size();
+            this.#model.addTransaction(new AddItem_Transaction(this.#model, item, insertAt));
             this.#itemModal.hide();
             return;
         }
@@ -255,6 +276,8 @@ export class AppController extends Observer {
         // Next keeps the modal open and moves it onto the following item
         if (then === 'next') {
             this.#itemModal.openForItem(list, index + 1);
+        } else if (then == 'previous'){
+            this.#itemModal.openForItem(list, index - 1);
         } else {
             this.#itemModal.hide();
         }
@@ -280,10 +303,23 @@ export class AppController extends Observer {
             case 'delete-list':
                 this.#model.deleteList(context.listId);
                 break;
+            case 'delete-item':
+                this.#model.addTransaction(
+                    new DeleteItem_Transaction(this.#model, context.index));
+                break;
             default:
                 console.warn('AppController was confirmed for an unknown action:', context);
                 break;
         }
+    }
+
+    #confirmDeleteItem(index, description) {
+        this.#confirmModal.ask({
+            title: 'Delete This Item?',
+            message: `The item "${description}" will be permanently deleted. You can undo this with Ctrl+Z.`,
+            acceptLabel: 'Delete Item',
+            context: { action: 'delete-item', index }
+        });
     }
 
     // -------------------------------------------------------------------------

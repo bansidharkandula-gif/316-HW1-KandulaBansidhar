@@ -13,6 +13,7 @@ export class EventTypes {
     // ----- sent by the HomeView -----
     static CREATE_LIST_REQUESTED = 'CREATE_LIST_REQUESTED';
     static OPEN_LIST_REQUESTED = 'OPEN_LIST_REQUESTED';
+    static DUPLICATE_LIST_REQUESTED = 'DUPLICATE_LIST_REQUESTED';
     static DELETE_LIST_REQUESTED = 'DELETE_LIST_REQUESTED';
 
     // ----- sent by the ListView -----
@@ -21,7 +22,9 @@ export class EventTypes {
     static CLOSE_LIST_REQUESTED = 'CLOSE_LIST_REQUESTED';
     static RENAME_LIST_REQUESTED = 'RENAME_LIST_REQUESTED';
     static EDIT_ITEM_REQUESTED = 'EDIT_ITEM_REQUESTED';
+    static ADD_ITEM_REQUESTED = 'ADD_ITEM_REQUESTED';
     static DUPLICATE_ITEM_REQUESTED = 'DUPLICATE_ITEM_REQUESTED';
+    static DELETE_ITEM_REQUESTED = 'DELETE_ITEM_REQUESTED';
     static MOVE_ITEM_REQUESTED = 'MOVE_ITEM_REQUESTED';
 
     // ----- sent by the ItemModal -----

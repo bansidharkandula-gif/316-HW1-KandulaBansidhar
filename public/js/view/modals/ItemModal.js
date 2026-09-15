@@ -19,15 +19,24 @@ import { EventTypes } from '../../common/EventTypes.js';
 import { DateUtil } from '../../common/DateUtil.js';
 
 export class ItemModal extends Modal {
+    static MODE_CREATE = 'create';
+    static MODE_EDIT = 'edit';
+
     #heading;
     #form;
     #descriptionInput;
     #dateEnteredInput;
+    #prioSelect;
+    #tarDateInput;
+    #doneInput;
+    #prevButton;
     #nextButton;
     #cancelButton;
     #okButton;
 
+
     // which item the modal is currently being used for
+    #mode;
     #index;
     #itemCount;
 
@@ -38,13 +47,17 @@ export class ItemModal extends Modal {
         this.#form = document.getElementById('item-modal-form');
         this.#descriptionInput = document.getElementById('item-description-input');
         this.#dateEnteredInput = document.getElementById('item-date-entered-input');
+        this.#prioSelect = document.getElementById('item-priority-select');
+        this.#tarDateInput = document.getElementById('item-target-date-input');
+        this.#doneInput = document.getElementById('item-completed-checkbox');
+        this.#prevButton = document.getElementById('item-previous-button');
         this.#nextButton = document.getElementById('item-next-button');
         this.#cancelButton = document.getElementById('item-cancel-button');
         this.#okButton = document.getElementById('item-ok-button');
 
+        this.#mode = ItemModal.MODE_CREATE;
         this.#index = -1;
         this.#itemCount = 0;
-
         this.#wireEventHandlers();
     }
 
@@ -62,12 +75,25 @@ export class ItemModal extends Modal {
         const item = list?.getItemAt(index);
         if (!item) return;
 
+        this.#mode = ItemModal.MODE_EDIT;
         this.#index = index;
         this.#itemCount = list.size();
 
         this.#heading.textContent = `Item ${index + 1} of ${list.size()}`;
         this.#okButton.textContent = 'OK';
         this.#loadValues(item.getValues());
+        this.#updateNavigationButtons();
+        this.show();
+    }
+
+    openForNewItem(list) {
+        this.#mode = ItemModal.MODE_CREATE;
+        this.#index = -1;
+        this.#itemCount = list?.size() ?? 0;
+
+        this.#heading.textContent = 'New Item';
+        this.#okButton.textContent = 'Add';
+        this.#loadValues({});
         this.#updateNavigationButtons();
         this.show();
     }
@@ -85,9 +111,10 @@ export class ItemModal extends Modal {
      * Escape means cancel, exactly like the Cancel button.
      */
     requestCancel() {
-        this.notifyObservers(EventTypes.ITEM_MODAL_CANCELLED, {});
+        this.notifyObservers(EventTypes.ITEM_MODAL_CANCELLED, { mode: this.#mode});
         this.hide();
     }
+
 
     // -------------------------------------------------------------------------
     // wiring
@@ -96,6 +123,7 @@ export class ItemModal extends Modal {
     #wireEventHandlers() {
         this.#okButton.addEventListener('click', () => this.#commit('close'));
         this.#cancelButton.addEventListener('click', () => this.requestCancel());
+        this.#prevButton.addEventListener('click', () => this.#commit('previous'));
         this.#nextButton.addEventListener('click', () => this.#commit('next'));
 
         // pressing Enter anywhere in the form is the same as pressing OK.
@@ -118,6 +146,9 @@ export class ItemModal extends Modal {
     #loadValues(values) {
         this.#descriptionInput.value = values.description ?? '';
         this.#dateEnteredInput.value = values.dateEntered ?? DateUtil.today();
+        this.#prioSelect.value =  values.priority ?? 'Low';
+        this.#tarDateInput.value = values.targetDate ?? '';
+        this.#doneInput.checked = Boolean(values.completed);
     }
 
     /**
@@ -126,7 +157,10 @@ export class ItemModal extends Modal {
     #collectValues() {
         return {
             description: this.#descriptionInput.value.trim(),
-            dateEntered: this.#dateEnteredInput.value || DateUtil.today()
+            dateEntered: this.#dateEnteredInput.value || DateUtil.today(),
+            priority: this.#prioSelect.value,
+            targetDate: this.#tarDateInput.value || null,
+            completed: this.#doneInput.checked
         };
     }
 
@@ -134,7 +168,9 @@ export class ItemModal extends Modal {
      * Next is meaningless on the last item.
      */
     #updateNavigationButtons() {
-        this.#nextButton.disabled = this.#index >= this.#itemCount - 1;
+        const isCreating = this.#mode === ItemModal.MODE_CREATE;
+        this.#prevButton.disabled = isCreating || this.#index <= 0;
+        this.#nextButton.disabled = isCreating || this.#index >= this.#itemCount - 1;
     }
 
     /**
@@ -154,6 +190,7 @@ export class ItemModal extends Modal {
         }
 
         this.notifyObservers(EventTypes.ITEM_MODAL_COMMIT, {
+            mode: this.#mode,
             index: this.#index,
             values,
             then

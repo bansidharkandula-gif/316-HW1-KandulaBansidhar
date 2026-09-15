@@ -108,7 +108,10 @@
                 <div class="item-column-headers" aria-hidden="true">
                     <span></span>
                     <span>Task</span>
+                    <span class="column-centered">Priority</span>
                     <span class="column-centered">Date Entered</span>
+                    <span class="column-centered">Target Date</span>
+                    <span class="column-centered">Done</span>
                     <span></span>
                 </div>
 
@@ -118,6 +121,8 @@
                     This list is empty.<br />
                     Press the <strong>+</strong> button to add an item.
                 </p>
+                
+                <button id="add-item-button" type="button" class="fab" title="Add a new item" aria-label="Add a new item">+</button>
 
             </div>
         </section>
@@ -144,10 +149,32 @@
                 <label class="field-label" for="item-date-entered-input">Date Entered</label>
                 <input id="item-date-entered-input" type="date" />
             </div>
+
+            <div class="field">
+                <label class="field-label" for="item-priority-select">Priority</label>
+                <select id="item-priority-select">
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low" selected>Low</option>
+                </select>
+            </div>
+
+            <div class="field field-row">
+                <div class="field-row-item">
+                    <label class="field-label" for="item-target-date-input">Target Date</label>
+                    <input id="item-target-date-input" type="date" />
+                </div>
+                <div class="field-row-item field-checkbox">
+                    <input id="item-completed-checkbox" type="checkbox" />
+                    <label class="field-label" for="item-completed-checkbox">Completed</label>
+                </div>
+            </div>
         </form>
 
         <div class="modal-footer">
             <div class="modal-footer-group">
+                <button id="item-previous-button" type="button" class="button button-quiet"
+                    title="Save and move to the previous item">&#x25C0;&nbsp;Previous</button>
                 <button id="item-next-button" type="button" class="button button-quiet"
                     title="Save and move to the next item">Next&nbsp;&#x25B6;</button>
             </div>
@@ -221,7 +248,8 @@
                 <span class="list-card-subtitle"></span>
             </div>
             <div class="card-actions">
-                <button type="button" class="icon-button icon-button-danger" data-action="delete-list">&#x1F5D1;&#xFE0E;</button>
+                <button type="button" class="icon-button" data-action="duplicate-list">&#x29C9;&#xFE0E;</button>
+                <button type="button" class="icon-button icon-button-danger" data-action="delete-list">&#x1F5D1;&#xFE0E;</button>  
             </div>
         </li>
     </template>
@@ -231,9 +259,13 @@
         <li class="card item-card" draggable="true" role="button" tabindex="0">
             <span class="drag-handle" aria-hidden="true">&#x283F;</span>
             <span class="item-description"></span>
+            <span class="priority-pill"></span>
             <span class="item-date item-date-entered"></span>
+            <span class="item-date item-target-date"></span>
+            <span class="item-completed-mark" aria-hidden="true"></span>
             <span class="card-actions">
                 <button type="button" class="icon-button" data-action="duplicate-item">&#x29C9;&#xFE0E;</button>
+                <button type="button" class="icon-button icon-button-danger" data-action="delete-item">&#x1F5D1;&#xFE0E;</button>
             </span>
         </li>
     </template>

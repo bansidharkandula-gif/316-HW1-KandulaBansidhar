@@ -64,6 +64,10 @@ export class WolfieList {
         return this.#items.length;
     }
 
+    countCompleted() {
+        return this.#items.filter((item) => item.isCompleted()).length;
+    }
+
     isEmpty() {
         return this.#items.length === 0;
     }

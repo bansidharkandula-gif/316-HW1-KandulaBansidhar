@@ -20,6 +20,7 @@
  */
 import { CardPrototype } from './CardPrototype.js';
 import { DateUtil } from '../../common/DateUtil.js';
+import { ListItem } from '../../model/ListItem.js';
 
 export class ItemCardPrototype extends CardPrototype {
     /** the id of this card's <template> in index.html */
@@ -45,5 +46,32 @@ export class ItemCardPrototype extends CardPrototype {
      * @param {number} index where that item currently sits in the list
      */
     initializeClone(element, item, index) {
+        element.dataset.itemId = item.id;
+        element.dataset.index = String(index);
+
+        const priority = ListItem.cleanPriority(item.priority);
+        const priorityClass = `priority-${priority.toLowerCase()}`;
+        const completed = item.isCompleted();
+
+        element.classList.add(priorityClass);
+        element.classList.toggle('item-completed', completed);
+        element.setAttribute('aria-label', completed? `Completed item: ${item.description}`: `Edit item: ${item.description}`);
+
+        CardPrototype.requirePart(element, '.item-description').textContent = item.description;
+        CardPrototype.requirePart(element, '.item-date-entered').textContent = DateUtil.format(item.dateEntered);
+        CardPrototype.requirePart(element, '.item-target-date').textContent = DateUtil.format(item.targetDate);
+        CardPrototype.requirePart(element, '.item-completed-mark').textContent = completed ? '✓' : '';
+
+        const priorityPill = CardPrototype.requirePart(element, '.priority-pill');
+        priorityPill.textContent = priority;
+        priorityPill.classList.add(priorityClass);
+
+        const dupButton = CardPrototype.requirePart(element, '[data-action="duplicate-item"]');
+        dupButton.title = `Duplicate this item`;
+        dupButton.setAttribute('aria-label', `Duplicate item: ${item.description}`);
+
+        const delButton = CardPrototype.requirePart(element, '[data-action="delete-item"]');
+        delButton.title = `Delete this item`;
+        delButton.setAttribute('aria-label', `Delete item: ${item.description}`);
     }
 }

@@ -28,21 +28,43 @@ import { IdGenerator } from '../common/IdGenerator.js';
 import { DateUtil } from '../common/DateUtil.js';
 
 export class ListItem {
+    static PRIO_HI = 'High';
+    static PRIO_MED = 'Medium';
+    static PRIO_LO = 'Low';
+
+    static priorityValues() {
+        return [ListItem.PRIO_HI, ListItem.PRIO_MED, ListItem.PRIO_LO];
+    }
+
+    static cleanPriority(value) {
+        return ListItem.priorityValues().includes(value) ? value : ListItem.PRIO_LO;
+    }
+
     #id;
     #description;
     #dateEntered;
+    #prio;
+    #tarDate;
+    #completed;
 
     /**
      * @param {Object} initialValues any subset of the fields below
      */
+
     constructor({
         id = IdGenerator.next('item'),
         description = '',
-        dateEntered = DateUtil.today()
+        dateEntered = DateUtil.today(),
+        priority = ListItem.PRIO_LO,
+        targetDate = null,
+        completed = false
     } = {}) {
         this.#id = id;
         this.#description = description;
         this.#dateEntered = DateUtil.clean(dateEntered) ?? DateUtil.today();
+        this.#prio = ListItem.cleanPriority(priority);
+        this.#tarDate = DateUtil.clean(targetDate);
+        this.#completed = completed === true;
     }
 
     // -------------------------------------------------------------------------
@@ -53,18 +75,28 @@ export class ListItem {
     get id() { return this.#id; }
     get description() { return this.#description; }
     get dateEntered() { return this.#dateEntered; }
+    get priority() { return this.#prio; }
+    get targetDate() { return this.#tarDate; }
+    get completed() { return this.#completed; }
+
+    isCompleted() {
+        return this.#completed;
+    }
 
     /**
      * @return {Object} just this item's editable values, i.e. everything except
      * the id. This is the snapshot the edit transaction remembers.
      */
+
     getValues() {
         return {
             description: this.#description,
-            dateEntered: this.#dateEntered
+            dateEntered: this.#dateEntered,
+            priority: this.#prio,
+            targetDate: this.#tarDate,
+            completed: this.#completed
         };
     }
-
     // -------------------------------------------------------------------------
     // writing
     // -------------------------------------------------------------------------
@@ -79,9 +111,13 @@ export class ListItem {
      *
      * @param {Object} values the new description and dateEntered
      */
-    applyValues({ description, dateEntered }) {
+
+    applyValues({ description, dateEntered, priority, targetDate, completed }) {
         if (description !== undefined) this.#description = description;
         if (dateEntered !== undefined) this.#dateEntered = DateUtil.clean(dateEntered) ?? this.#dateEntered;
+        if (priority !== undefined) this.#prio = ListItem.cleanPriority(priority);
+        if (targetDate !== undefined) this.#tarDate = DateUtil.clean(targetDate);
+        if (completed !== undefined) this.#completed = completed === true;
     }
 
     // -------------------------------------------------------------------------
@@ -96,6 +132,7 @@ export class ListItem {
      *
      * @return {ListItem} the copy
      */
+
     clone() {
         return new ListItem(this.getValues());
     }
@@ -109,6 +146,7 @@ export class ListItem {
      *
      * @return {Object}
      */
+
     toJSON() {
         return { id: this.#id, ...this.getValues() };
     }
@@ -117,6 +155,7 @@ export class ListItem {
      * @param {Object} json an object that came back out of local storage
      * @return {ListItem} a real ListItem, with anything malformed cleaned up
      */
+
     static fromJSON(json) {
         return new ListItem(json ?? {});
     }

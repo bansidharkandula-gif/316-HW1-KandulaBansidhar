@@ -28,6 +28,7 @@ export class ListView extends Subject {
     #homeButton;
     #listNameInput;
     #cardPrototype;
+    #addItemButton
 
     // drag and drop bookkeeping
     #dragFromIndex;
@@ -49,6 +50,7 @@ export class ListView extends Subject {
         this.#closeButton = document.getElementById('close-button');
         this.#homeButton = document.getElementById('home-button');
         this.#listNameInput = document.getElementById('list-name-input');
+        this.#addItemButton = document.getElementById('add-item-button');
 
         this.#cardPrototype = new ItemCardPrototype();
 
@@ -173,6 +175,10 @@ export class ListView extends Subject {
             this.notifyObservers(EventTypes.CLOSE_LIST_REQUESTED);
         });
 
+        this.#addItemButton.addEventListener('click', () => {
+            this.notifyObservers(EventTypes.ADD_ITEM_REQUESTED);
+        });
+
         // The Wolfie in the top left corner is a second way of doing exactly
         // what the close button does, so it announces the very same event rather
         // than an event of its own. That is worth being deliberate about: two
@@ -237,6 +243,12 @@ export class ListView extends Subject {
         switch (action) {
             case 'duplicate-item':
                 this.notifyObservers(EventTypes.DUPLICATE_ITEM_REQUESTED, { index });
+                break;
+            case 'delete-item':
+                this.notifyObservers(EventTypes.DELETE_ITEM_REQUESTED, {
+                    index,
+                    description: item.description
+                });
                 break;
             default:
                 this.notifyObservers(EventTypes.EDIT_ITEM_REQUESTED, { index });

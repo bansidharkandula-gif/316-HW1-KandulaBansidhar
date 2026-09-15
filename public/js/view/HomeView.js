@@ -154,6 +154,9 @@ export class HomeView extends Subject {
         const action = actionButton?.dataset.action ?? 'open-list';
 
         switch (action) {
+            case 'duplicate-list':
+                this.notifyObservers(EventTypes.DUPLICATE_LIST_REQUESTED, { listId });
+                break;
             case 'delete-list':
                 this.notifyObservers(EventTypes.DELETE_LIST_REQUESTED, {
                     listId,
