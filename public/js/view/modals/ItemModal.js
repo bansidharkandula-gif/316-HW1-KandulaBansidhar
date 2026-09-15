@@ -147,7 +147,7 @@ export class ItemModal extends Modal {
         this.#descriptionInput.value = values.description ?? '';
         this.#dateEnteredInput.value = values.dateEntered ?? DateUtil.today();
         this.#prioSelect.value =  values.priority ?? 'Low';
-        this.#tarDateInput.value = values.targetDate ?? '';
+        this.#tarDateInput.value = values.targetDate ?? 'mm/dd/yyyy';
         this.#doneInput.checked = Boolean(values.completed);
     }
 

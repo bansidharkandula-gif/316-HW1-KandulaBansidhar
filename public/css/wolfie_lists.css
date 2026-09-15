@@ -44,6 +44,13 @@
     --grey-700: #55504b;
     --grey-900: #221f1d;
 
+    --priority-high: #990000;
+    --priority-high-dark: #6f0000;
+    --priority-medium: #8a6d1f;
+    --priority-medium-dark: #6b5417;
+    --priority-low: #3c6b34;
+    --priority-low-dark: #2c4f27;
+
     /* ----- the tick in the completed column ----- */
     --completed-mark: #3c6b34;
 
@@ -64,8 +71,8 @@
         "Apple Chancery", cursive;
 
     /* ----- the one grid that both an item card and the column headers use ----- */
-    --item-grid-columns: 1.75rem minmax(8rem, 1fr) 7rem 4.75rem;
-    --item-grid-areas: "handle description entered actions";
+    --item-grid-columns: 1.75rem minmax(8rem, 1fr) 5rem 6.5rem 6.5rem 3.5rem 4.75rem;
+    --item-grid-areas: "handle description entered priority target done actions";
     --card-inline-padding: 0.875rem;
     --card-accent-width: 0.3125rem;
 }
@@ -173,6 +180,43 @@ body {
     line-height: 1.1;
     letter-spacing: 0.03em;
     text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.35);
+}
+
+.priority-pill {
+    grid-area: priority;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--sbu-white);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.priority-pill.priority-high {
+    background-color: var(--priority-high);
+}
+
+.priority-pill.priority-medium {
+    background-color: var(--priority-medium);
+}
+
+.priority-pill.priority-low {
+    background-color: var(--priority-low);
+}
+
+.item-card.priority-high {
+    border-left-color: var(--priority-high);
+}
+
+.item-card.priority-medium {
+    border-left-color: var(--priority-medium);
+}
+
+.item-card.priority-low {
+    border-left-color: var(--priority-low);
 }
 
 /* ==========================================================================
@@ -467,9 +511,15 @@ body {
 }
 
 .item-target-date {
+    grid-area: target;
+    text-align: left;
 }
 
 .item-completed-mark {
+    grid-area: done;
+    text-align: left;
+    font-weight: 700;
+    color: var(--completed-mark);
 }
 
 /* The dates are centered in their columns rather than pushed to one side, which
@@ -495,9 +545,12 @@ body {
 
 /* a finished item is struck through and steps into the background */
 .item-card.item-completed {
+    opacity: 0.6;
 }
 
 .item-card.item-completed .item-description {
+    text-decoration: line-through;
+    color: var(--grey-500);
 }
 
 /* ----- drag and drop ----- */
@@ -664,6 +717,7 @@ body.modal-is-open #app {
 .field {
     display: flex;
     flex-direction: column;
+    justify-content: left;
     gap: 0.3125rem;
     flex: 1;
     min-width: 0;
@@ -678,15 +732,29 @@ body.modal-is-open #app {
 }
 
 .field-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: left;
+    gap: 1rem;
 }
 
 .field-row-tight {
+    flex: 0 0 auto;
 }
 
 .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+
 }
 
 .checkbox-field input {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--sbu-red);
+    cursor: pointer;
 }
 
 /* Everything below is scoped to .modal on purpose. The list name field up in the
@@ -715,6 +783,8 @@ body.modal-is-open #app {
    Completed checkbox lands right beside it rather than out at the far edge of
    the modal. This rule has to come after the one above to outrank it. */
 .modal input.target-date-input {
+    flex: 0 0 auto;
+    width: 9rem;
 }
 
 .modal input:focus,
@@ -847,6 +917,8 @@ body.modal-is-open #app {
     }
 
     .item-target-date::before {
+        content: "Target ";
+        color: var(--grey-500);
     }
 
     /* stacked into rows there are no columns to center anything in, and a
@@ -857,17 +929,25 @@ body.modal-is-open #app {
 
     .item-target-date,
     .item-completed-mark {
+        text-align: left;
     }
 
     /* nothing is drawn here at all unless the item is completed, so the label
        and the tick appear together or not at all */
     .item-card.item-completed .item-completed-mark::before {
+        content: "Completed ";
+        color: var(--grey-500);
     }
 
     .field-row {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: left;
+        gap: 0.5rem;
     }
 
     .field-row-tight {
+        flex: initial;
     }
 }
 
